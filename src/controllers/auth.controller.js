@@ -1,6 +1,7 @@
 const user = require('../models/user.model.js');
 const bcrypt = require('bcrypt');
 const APIError = require('../utils/errors.js');
+const Response = require('../utils/response.js');
 
 const login = async (req, res) => {
     console.log(req.body);
@@ -21,23 +22,15 @@ const register = async (req, res) => {
 
     console.log("hash şifre: ", req.body.password);
 
-    try {
-        const userSave = new user(req.body);
+    const userSave = new user(req.body);
 
-        await userSave.save()
-            .then((response)=>{
-                return res.status(201).json({
-                    success: true,
-                    data: response,
-                    message: "Kayıt Başarıyla Eklendi"
-                })
-            })
-            .catch((err)=>{
-                console.log(err);
-            })
-    } catch (error) {
-        console.log(error);
-    }
+    await userSave.save()
+        .then((data)=>{
+            return new Response(data, "Kayıt Başarıyla Eklendi").created(res)
+        })
+        .catch((err)=>{
+            throw new APIError("Kayıt Eklenemedi!", 400)
+        })
 }
 
 module.exports = {
