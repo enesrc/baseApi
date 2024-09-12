@@ -1,28 +1,38 @@
-const user = require('../models/user.model.js');
+const User = require('../models/user.model.js');
 const bcrypt = require('bcrypt');
 const APIError = require('../utils/errors.js');
 const Response = require('../utils/response.js');
+const { createToken } = require('../middlewares/auth.js');
 
 const login = async (req, res) => {
-    console.log(req.body);
+    const { email, password } = req.body
+    
+    const user = await User.findOne({email})
+    
+    if(!user)
+        throw new APIError("ERROR> Email veya Şifre Hatalı (email)<ERROR")
 
-    return res.json(req.body);
+    const resultOfComparing = await bcrypt.compare(password, user.password)
+
+    if(!resultOfComparing)
+        throw new APIError("ERROR> Email veya Şifre Hatalı (sifre)<ERROR")
+
+    createToken(user, res)
 }
 
 const register = async (req, res) => {
-    const { email } = req.body;
+    const { email } = req.body
 
-    const userCheck = await user.findOne({email: email});
+    const user = await User.findOne({email: email});
     
-    if(userCheck){
-        throw new APIError("Girmiş Olduğunuz Email Kullanımda!", 401);
-    }
+    if(user)
+        throw new APIError("Girmiş Olduğunuz Email Kullanımda!", 401)
 
     req.body.password = await bcrypt.hash(req.body.password, 10);
 
     console.log("hash şifre: ", req.body.password);
 
-    const userSave = new user(req.body);
+    const userSave = new User(req.body);
 
     await userSave.save()
         .then((data)=>{
@@ -33,7 +43,12 @@ const register = async (req, res) => {
         })
 }
 
+const me = async (req, res) => {
+    return new Response(req.user).success(res)
+}
+
 module.exports = {
     login,
-    register
+    register,
+    me
 }
