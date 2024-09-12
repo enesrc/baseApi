@@ -16,7 +16,7 @@ const createToken = async (user, res) => {
     return res.status(201).json({
         success: true,
         token,
-        message: "Başarili"
+        message: "Token Başarıyla Oluşturuldu."
     })
 }
 
@@ -33,8 +33,6 @@ const tokenCheck = async (req, res, next) => {
             throw new APIError("Geçersiz Token!", 401)
 
         const user = await User.findById(decoded.sub).select("_id name lastname email")
-
-        console.log(user);
         
         if(!user)
             throw new APIError("Geçersiz Token!", 401)

@@ -5,19 +5,17 @@ const Response = require('../utils/response.js');
 const { createToken } = require('../middlewares/auth.js');
 
 const login = async (req, res) => {
-    console.log(login);
-    
     const { email, password } = req.body
-    
+
     const user = await User.findOne({email})
     
     if(!user)
-        throw new APIError("ERROR> Email veya Şifre Hatalı (email)<ERROR")
+        throw new APIError("Email veya Şifre Hatalı (email [for dev])")
 
     const resultOfComparing = await bcrypt.compare(password, user.password)
 
     if(!resultOfComparing)
-        throw new APIError("ERROR> Email veya Şifre Hatalı (sifre)<ERROR")
+        throw new APIError("Email veya Şifre Hatalı (sifre [for dev])")
 
     createToken(user, res)
 }
