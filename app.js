@@ -9,13 +9,20 @@ const errorHandlerMiddleware = require("./src/middlewares/errorHandler.js");
 const cors = require("cors");
 const corsOptions = require("./src/helpers/corsOptions.js");
 const mongoSanitize = require('express-mongo-sanitize');
+const path = require("path");
+const apiLimiter = require("./src/middlewares/ratelimit.js");
 
 // Middleware
 app.use(express.json());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true, parameterLimit: 50000}));
 
+app.use(express.static(path.join(__dirname, "public")))
+app.use("/uploads", express.static(__dirname))
+
 app.use(cors(corsOptions))
+
+app.use("/api", apiLimiter)
 
 app.use(
     mongoSanitize({
